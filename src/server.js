@@ -121,4 +121,7 @@ const requestHandler = (req, res) => {
 };
 
 const server = http.createServer(requestHandler);
-server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+server.listen(process.env.PORT || 3000, function(){
+    console.log(`Server running on port ${PORT}`);
+  });
+
