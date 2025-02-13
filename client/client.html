@@ -4,9 +4,6 @@
   <title>Our simple HTTP server</title>
   <link rel="stylesheet" type="text/css" href="/style.css">
   
-  <script>
-
-  </script>
 </head>
 <body>
   <section id="top">
@@ -28,5 +25,64 @@
   </section>
   <section id="content">
   </section>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const sendButton = document.getElementById('send');
+      if (sendButton) {
+        sendButton.addEventListener('click', function(event) {
+          // Prevent the default form submission behavior
+          event.preventDefault();
+  
+          // Get the selected values from the dropdowns
+          const selectedEndpoint = document.getElementById('page').value;
+          const selectedFormat = document.getElementById('type').value;
+  
+          // Function to send fetch request and handle response
+          function fetchAndDisplay(url, acceptHeader) {
+            fetch(url, {
+              method: 'GET',
+              headers: {
+                'Accept': acceptHeader
+              }
+            })
+            .then(response => {
+              const contentType = response.headers.get('Content-Type');
+              return contentType.includes('application/json') ? response.json() : response.text();
+            })
+            .then(data => {
+              // Display the response message on the page
+              const responseDiv = document.getElementById('content');
+              if (typeof data === 'string') {
+                // Parse XML data if necessary
+                const parser = new DOMParser();
+                const xmlDoc = parser.parseFromString(data, 'text/xml');
+                const status = xmlDoc.getElementsByTagName('status')[0].textContent;
+                const message = xmlDoc.getElementsByTagName('message')[0].textContent;
+                responseDiv.innerHTML = `
+                  <h2>${status}</h2>
+                  <p>${message}</p>
+                `;
+              } else {
+                responseDiv.innerHTML = `
+                  <h2>${data.status}</h2>
+                  <p>${data.message}</p>
+                `;
+              }
+            })
+            .catch(error => {
+              console.error('Error fetching ' + url + ':', error);
+              const responseDiv = document.getElementById('content');
+              responseDiv.textContent = 'An error occurred while fetching the response from ' + url;
+            });
+          }
+  
+          // Send request to the selected URL with the selected format
+          fetchAndDisplay(selectedEndpoint, selectedFormat);
+        });
+      } else {
+        console.error('Send button not found in the DOM.');
+      }
+    });
+  </script>
 </body>
 </html>
